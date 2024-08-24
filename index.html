@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encode and Decode</title>
+    <style>
+        /* General styling */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e0f2f1; /* Light mint green background */
+            color: #333;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+        }
+
+        h1 {
+            color: #00796b; /* Darker mint green */
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #004d40; /* Even darker shade for headers */
+            margin-bottom: 10px;
+        }
+
+        .form-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            margin-top: 20px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .form-box {
+            background-color: #ffffff;
+            border: 2px solid #b2dfdb; /* Border with mint green accent */
+            border-radius: 8px;
+            padding: 20px;
+            width: 100%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        input[type="text"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #b2dfdb;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #26a69a; /* Button color mint green */
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #00796b; /* Darker mint green on hover */
+        }
+
+        .result-container {
+            margin-top: 30px;
+            text-align: center;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .result-box {
+            background-color: #ffffff;
+            border: 2px solid #b2dfdb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #encode_step_2 {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Encode and Decode Tool</h1>
+
+    <div class="form-container">
+        <!-- Encode Form: Step 1 -->
+        <div class="form-box">
+            <h2>Encode - Step 1</h2>
+            <label for="text_input">Text to Encode:</label>
+            <input type="text" id="text_input" placeholder="Enter text to encode" required><br>
+            
+            <button onclick="handleTextToAscii()">Convert to ASCII</button>
+            
+            <p id="ascii_output"></p>
+            <p id="required_digits"></p>
+        </div>
+
+        <!-- Encode Form: Step 2 -->
+        <div class="form-box" id="encode_step_2">
+            <h2>Encode - Step 2</h2>
+            <label for="encode_num_str2">Digits for Modulo Addition:</label>
+            <input type="text" id="encode_num_str2" placeholder="Enter number string" required><br>
+            
+            <button onclick="handleEncode()">Perform Modulo Addition</button>
+        </div>
+
+        <!-- Decode Form -->
+        <div class="form-box">
+            <h2>Decode</h2>
+            <label for="decode_num_str1">Number String 1:</label>
+            <input type="text" id="decode_num_str1" placeholder="Enter first number string" required><br>
+            
+            <label for="decode_num_str2">Number String 2:</label>
+            <input type="text" id="decode_num_str2" placeholder="Enter second number string" required><br>
+            
+            <button onclick="handleDecode()">Decode</button>
+        </div>
+    </div>
+
+    <div class="result-container">
+        <div class="result-box">
+            <h3>Encode Result:</h3>
+            <p id="encode_result"></p>
+        </div>
+
+        <div class="result-box">
+            <h3>Decode Result:</h3>
+            <p id="decode_result"></p>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript functions
+        function textToAscii(text) {
+            let asciiValues = '';
+            for (let i = 0; i < text.length; i++) {
+                asciiValues += text.charCodeAt(i);
+            }
+            return asciiValues;
+        }
+
+        function moduloAdditionPerDigit(numStr1, numStr2, modulo) {
+            if (numStr1.length !== numStr2.length) {
+                throw new Error("Both strings must have the same length.");
+            }
+            let result = '';
+            for (let i = 0; i < numStr1.length; i++) {
+                let sumDigits = (parseInt(numStr1[i]) + parseInt(numStr2[i])) % modulo;
+                result += sumDigits;
+            }
+            return result;
+        }
+
+        function moduloSubtractionPerDigit(numStr1, numStr2) {
+            if (numStr1.length !== numStr2.length) {
+                throw new Error("Both strings must have the same length.");
+            }
+            let modulo = 10;
+            let result = '';
+            for (let i = 0; i < numStr1.length; i++) {
+                let diffDigits = (parseInt(numStr1[i]) - parseInt(numStr2[i])) % modulo;
+                result += (diffDigits + modulo) % modulo;  // Handle negative results
+            }
+            return result;
+        }
+
+        function numbersToLetters(numStr) {
+            let letters = '';
+            for (let i = 0; i < numStr.length; i += 3) {
+                let asciiValue = parseInt(numStr.substring(i, i + 3));
+                if (asciiValue >= 32 && asciiValue <= 126) {
+                    letters += String.fromCharCode(asciiValue);
+                }
+            }
+            return letters;
+        }
+
+        function handleTextToAscii() {
+            const textInput = document.getElementById("text_input").value;
+            try {
+                const asciiOutput = textToAscii(textInput);
+                document.getElementById("ascii_output").innerText = `ASCII representation: ${asciiOutput}`;
+                document.getElementById("required_digits").innerText = `You need to input ${asciiOutput.length} digits for modulo addition.`;
+                document.getElementById("encode_step_2").style.display = "block";  // Show the next step
+            } catch (e) {
+                document.getElementById("ascii_output").innerText = `Error: ${e.message}`;
+                document.getElementById("required_digits").innerText = '';
+                document.getElementById("encode_step_2").style.display = "none";  // Hide the next step if error
+            }
+        }
+
+        function handleEncode() {
+            const textInput = document.getElementById("text_input").value;
+            const numStr2 = document.getElementById("encode_num_str2").value;
+
+            try {
+                const asciiOutput = textToAscii(textInput);
+                const result = moduloAdditionPerDigit(asciiOutput, numStr2, 10);
+                document.getElementById("encode_result").innerText = `The result of the modulo addition is: ${result}`;
+            } catch (e) {
+                document.getElementById("encode_result").innerText = `Error: ${e.message}`;
+            }
+        }
+
+        function handleDecode() {
+            const numStr1 = document.getElementById("decode_num_str1").value;
+            const numStr2 = document.getElementById("decode_num_str2").value;
+            
+            try {
+                const subtractionResult = moduloSubtractionPerDigit(numStr1, numStr2);
+                const letterResult = numbersToLetters(subtractionResult);
+                document.getElementById("decode_result").innerText = `Modulo subtraction result: ${subtractionResult}. The resulting string is: ${letterResult}`;
+            } catch (e) {
+                document.getElementById("decode_result").innerText = `Error: ${e.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
